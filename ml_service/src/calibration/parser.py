@@ -1,5 +1,6 @@
 import yaml
 import os
+import requests  # Добавлен импорт для отправки данных
 
 
 def parse_calibration(file_path):
@@ -14,8 +15,6 @@ def parse_calibration(file_path):
     try:
         with open(file_path, 'r') as f:
             lines = f.readlines()
-
-            # Удаление специфических метаданных OpenCV
             processed_lines = []
             for line in lines:
                 if line.startswith('%YAML'):
@@ -25,11 +24,8 @@ def parse_calibration(file_path):
             content = "".join(processed_lines)
             data = yaml.safe_load(content)
 
-        # Извлечение матрицы K и фокусного расстояния fx
         k_data = data['K']['data']
         focal_length = float(k_data[0])
-
-        # Получение разрешения изображения (ширина, высота)
         width, height = data['sz']
 
         return {
@@ -44,19 +40,33 @@ def parse_calibration(file_path):
 
 
 if __name__ == "__main__":
-    # Определение путей относительно корня проекта
+    # Настройка путей
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_dir, "../../../"))
-
     file_name = "leftDef.yml"
     path = os.path.join(project_root, "ml_service", "data", "raw", file_name)
 
-    print(f"Путь к файлу: {path}")
-
+    # Получение данных калибровки
     calibration_data = parse_calibration(path)
+
     if calibration_data:
-        print("\nПараметры калибровки:")
-        print("-" * 30)
-        print(f"Фокусное расстояние (fx): {calibration_data['focal_length']} px")
-        print(f"Разрешение: {calibration_data['width']} x {calibration_data['height']}")
-        print("-" * 30)
+        print(f"Извлечено фокусное расстояние: {calibration_data['focal_length']} px")
+
+        # Подготовка данных для отправки в Go-бэкенд
+        payload = {
+            "focal_length": calibration_data['focal_length'],
+            "width": calibration_data['width'],
+            "height": calibration_data['height']
+        }
+
+        # Отправка POST-запроса на локальный сервер Go
+        try:
+            url = "http://localhost:8080/api/detections"
+            response = requests.post(url, json=payload)
+
+            if response.status_code == 200:
+                print("Интеграционный тест пройден: данные успешно переданы в Go-бэкенд!")
+            else:
+                print(f"Ошибка связи с бэкендом. Статус: {response.status_code}")
+        except Exception as e:
+            print(f"Бэкенд недоступен. Убедитесь, что сервер в GoLand запущен. Ошибка: {e}")
