@@ -1,0 +1,30 @@
+%YAML:1.0
+---
+deviceType: Camera
+K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 4.6450000000000000e+02, 0., 4.8310000000000002e+02, 0.,
+       4.6450000000000000e+02, 2.6539999999999998e+02, 0., 0., 1. ]
+D: !!opencv-matrix
+   rows: 5
+   cols: 1
+   dt: d
+   data: [ 0., 0., 0., 0., 0. ]
+r: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ -6.6823762054822128e-02, 5.7416263345215978e-04,
+       3.3252305504694693e-03 ]
+t: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ -2.6606335900077394e-01, -3.1999999999999995e-01,
+       2.0970000022351742e+00 ]
+sz: [ 960, 540 ]
+remapped:
+   []
+dm: simple
